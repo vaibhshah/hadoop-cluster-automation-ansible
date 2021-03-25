@@ -1,0 +1,100 @@
+- name: "Ansible playbook to configure Master Node"
+  hosts:  master
+  vars:
+  - destf: "root"
+  - master_dir_name: "namenode4" 
+  tasks: 
+  - name: "Copying Java software at NameNode "
+    copy:
+      src: "jdk-8u171-linux-x64.rpm"
+      dest: "/{{ destf }}/"
+  - name: "Copying Hadoop software at NameNode"
+    copy:
+      src: "hadoop-1.2.1-1.x86_64.rpm"
+      dest: "/{{ destf }}/"
+
+  - name: "Installing Java software at NameNode"
+    command: "rpm -ivh jdk-8u171-linux-x64.rpm"
+
+  - name: "Installing Hadoop software at NameNode"
+    command: "rpm -ivh hadoop-1.2.1-1.x86_64.rpm --force"
+
+  - name: "Stopping firewall for a while"
+    command: "systemctl stop firewalld"
+
+  - name: "Folder creation at NameNode"
+    file:
+      dest: "/root/{{ master_dir_name }}"
+      state: directory
+
+  - name: "Copying hdfs-site file"
+    template:
+      src: "/root/ansiblews/hadoop/hdfs-site.xml.j2"
+      dest: "/etc/hadoop/hdfs-site.xml"
+
+
+  - name: "Copying core-site file"
+    template:
+      src: "/root/ansiblews/hadoop/core-site.xml"
+      dest: "/etc/hadoop/core-site.xml"
+
+  - name: "Formatting Master Node"
+    command: "hadoop namenode -format"
+
+  - name: "Starting MasterNode service"
+    command: "hadoop-daemon.sh start namenode"
+
+
+
+- name: "Ansible playbook to configure Data Nodes"
+  vars:
+  - destf: "root"
+  - slave_dir_name: "datanode1"
+  hosts: slave
+
+  tasks: 
+  - name: "Copying Java software at DataNode "
+    copy:
+      src: "jdk-8u171-linux-x64.rpm"
+      dest: "/{{ destf }}/"
+
+  - name: "Copying Hadoop software at DataNode"
+    copy:
+      src: "hadoop-1.2.1-1.x86_64.rpm"
+      dest: "/{{ destf }}/"
+
+  - name: "Installing Java software at DataNode"
+    command: "rpm -ivh jdk-8u171-linux-x64.rpm"
+
+  - name: "Installing Hadoop software at DataNode"
+    command: "rpm -ivh hadoop-1.2.1-1.x86_64.rpm --force"
+
+  - name: "Stopping firewall for a while"
+    command: "systemctl stop firewalld"
+
+  - name: "Folder creation at DataNode"
+    file:
+      dest: "/root/{{ slave_dir_name }}"
+      state: directory
+
+  - name: "Copying hdfs-site file"
+    template:
+      src: "/root/ansiblews/hadoop/hdfs-site.xml"
+      dest: "/etc/hadoop/hdfs-site.xml"
+
+
+  - name: "Copying core-site file"
+    template:
+      src: "/root/ansiblews/hadoop/core-site.xml"
+      dest: "/etc/hadoop/core-site.xml"
+
+
+  - name: "Starting DataNode service"
+    command: "hadoop-daemon.sh start datanode"
+
+
+
+
+
+
+
